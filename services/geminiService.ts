@@ -116,7 +116,7 @@ export const generateThumbnail = async (htmlContent: string, style: string = 'Mo
     const response = await openai.images.generate({
       model: imageModelName,
       prompt: prompt,
-      size: "1792x1024",
+      size: "1536x1024",  // Supported landscape format for thumbnails
       n: 1,
     });
 
