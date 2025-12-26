@@ -117,14 +117,23 @@ export const generateThumbnail = async (htmlContent: string, style: string = 'Mo
       model: imageModelName,
       prompt: prompt,
       size: "1792x1024",
-      response_format: "b64_json",
       n: 1,
     });
 
-    const base64Data = response.data[0].b64_json;
-    if (!base64Data) return null;
+    // Get the image URL
+    const imageUrl = response.data[0].url;
+    if (!imageUrl) return null;
 
-    return `data:image/png;base64,${base64Data}`;
+    // Fetch the image and convert to base64
+    const imageResponse = await fetch(imageUrl);
+    const blob = await imageResponse.blob();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   } catch (e) {
     console.error("Thumbnail generation failed", e);
     return null;
