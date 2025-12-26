@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { DiscoveryGrid } from './components/DiscoveryGrid';
+import { PresentationSlidesGrid } from './components/PresentationSlidesGrid';
 import { Player } from './components/Player';
 import { Upload } from './components/Upload';
 import { Analytics } from './components/Analytics';
@@ -12,9 +13,12 @@ export default function App() {
   const [presentations, setPresentations] = useState<Presentation[]>(MOCK_PRESENTATIONS);
   const [activePresentation, setActivePresentation] = useState<Presentation | null>(null);
   const [presentationToEdit, setPresentationToEdit] = useState<Presentation | null>(null);
-  
+
   // Theme State
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // Main View Mode (cards or slideGrid)
+  const [mainViewMode, setMainViewMode] = useState<'cards' | 'slideGrid'>('cards');
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -28,7 +32,11 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  const handlePresentationSelect = (p: Presentation) => {
+  const toggleMainViewMode = () => {
+    setMainViewMode(prev => prev === 'cards' ? 'slideGrid' : 'cards');
+  };
+
+  const handlePresentationSelect = (p: Presentation, slideIndex: number = 0) => {
     setActivePresentation(p);
     setCurrentView('PLAYER');
   };
@@ -87,20 +95,28 @@ export default function App() {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Discover Presentations</h1>
               <p className="text-slate-500 dark:text-slate-400">Explore the best HTML-based slide decks from the community.</p>
-              
+
               <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
                 {['Trending', 'Technology', 'Design', 'Business', 'Education'].map(tag => (
                    <button key={tag} className="px-4 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm whitespace-nowrap hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-white transition-colors">
                       {tag}
-                   </button> 
+                   </button>
                 ))}
               </div>
             </div>
-            <DiscoveryGrid 
-              presentations={presentations} 
-              onSelect={handlePresentationSelect}
-              onEdit={handlePresentationEdit}
-            />
+
+            {mainViewMode === 'cards' ? (
+              <DiscoveryGrid
+                presentations={presentations}
+                onSelect={handlePresentationSelect}
+                onEdit={handlePresentationEdit}
+              />
+            ) : (
+              <PresentationSlidesGrid
+                presentations={presentations}
+                onSlideClick={handlePresentationSelect}
+              />
+            )}
           </main>
         );
     }
@@ -110,11 +126,13 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
       {/* Do not show header in immersive player mode */}
       {currentView !== 'PLAYER' && (
-        <Header 
-          currentView={currentView} 
-          setView={setCurrentView} 
+        <Header
+          currentView={currentView}
+          setView={setCurrentView}
           theme={theme}
           toggleTheme={toggleTheme}
+          mainViewMode={mainViewMode}
+          toggleMainViewMode={toggleMainViewMode}
         />
       )}
       
